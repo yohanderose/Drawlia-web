@@ -61,7 +61,7 @@
     <input type="range" min="10" max="100" value="10" step="10" onchange="applyGrid(this.value)"> <br>
     <input id="grayscale" type="hidden" value="0" data-filter="grayscale" data-scale="%" style="display: hidden;"><br>
     <button id="grayscale-toggle">BW</button><br><br>
-    <button id="posterize-toggle" value="0">Posterize</button><br>
+    <button id="posterize-toggle" value="1">Posterize</button><br>
     <br>
 
     <div id="container">

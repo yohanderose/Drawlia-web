@@ -153,11 +153,15 @@ let Filters = (function () {
     });
 
     $("#posterize-toggle").on("click", () => {
-      $("#posterize-toggle").attr(
-        "value",
-        !$("#posterize-toggle").attr("value")
-      );
-      if ($("#posterize-toggle") == "1") {
+      console.log($("#posterize-toggle").attr("value"));
+      let posterize = parseInt($("#posterize-toggle").attr("value"));
+
+      if (posterize) {
+        $("img").css("filter", "url(#posterize)");
+        $("#posterize-toggle").attr("value", "0");
+      } else {
+        $("img").css("filter", "none");
+        $("#posterize-toggle").attr("value", "1");
       }
     });
 
