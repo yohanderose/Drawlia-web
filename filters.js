@@ -152,6 +152,15 @@ let Filters = (function () {
       this.applyFilter();
     });
 
+    $("#posterize-toggle").on("click", () => {
+      $("#posterize-toggle").attr(
+        "value",
+        !$("#posterize-toggle").attr("value")
+      );
+      if ($("#posterize-toggle") == "1") {
+      }
+    });
+
     applyGrid(10);
   };
 

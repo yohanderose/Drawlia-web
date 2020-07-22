@@ -44,8 +44,8 @@
     }
 
     canvas {
-        width: 100%;
-        height: 100%;
+        width: 100vw;
+        height: auto;
         position: absolute;
         top: 0px;
         left: 0px;
@@ -60,16 +60,28 @@
     <label>Grid Size</label>
     <input type="range" min="10" max="100" value="10" step="10" onchange="applyGrid(this.value)"> <br>
     <input id="grayscale" type="hidden" value="0" data-filter="grayscale" data-scale="%" style="display: hidden;"><br>
-    <button id="grayscale-toggle">BW</button><br>
+    <button id="grayscale-toggle">BW</button><br><br>
+    <button id="posterize-toggle" value="0">Posterize</button><br>
     <br>
 
     <div id="container">
         <div id="slide">
-            <img id="image" src="model.jpg" alt="Project Image"><br>
-            <canvas id="c" width="500" height="375"></canvas>
+            <img id="image" src="model.jpg" alt="Project Image" style="filter: none;"><br>
+            <canvas id="c"></canvas>
 
         </div>
     </div>
+
+    <!-- // The filter -->
+    <svg>
+        <filter id="posterize">
+            <feComponentTransfer>
+                <feFuncR type="discrete" tableValues="0 0.25 0.5 0.75 1" />
+                <feFuncG type="discrete" tableValues="0 0.25 0.5 0.75 1" />
+                <feFuncB type="discrete" tableValues="0 0.25 0.5 0.75 1" />
+            </feComponentTransfer>
+        </filter>
+    </svg>
 </body>
 
 </html>
