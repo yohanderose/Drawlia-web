@@ -5,7 +5,9 @@ let Filters = (function () {
     let image = document.querySelector("img");
     let filterValues = $("input");
     let computedFilters = "";
-    Array.from(filterValues).forEach((element) => {
+    filterValues = Array.from(filterValues).slice(0,-1);
+    // console.log(filterValues)
+    filterValues.forEach((element) => {
       computedFilters +=
         element.getAttribute("data-filter") +
         "(" +
@@ -13,13 +15,14 @@ let Filters = (function () {
         element.getAttribute("data-scale") +
         ")";
     });
+    // console.log(computedFilters)
     image.style.filter = computedFilters;
   };
 
   // https://jsfiddle.net/xta2ccdt/13/
   function ScrollZoom(container, max_scale, factor) {
     var target = container.children().first();
-    console.log(target);
+    // console.log(target);
     var size = { w: target.width(), h: target.height() };
     var pos = { x: 0, y: 0 };
     var zoom_target = { x: 0, y: 0 };
@@ -50,7 +53,7 @@ let Filters = (function () {
         e.preventDefault();
         pos.x += -(previousX - e.clientX) * 2;
         pos.y += -(previousY - e.clientY) * 2;
-        console.log(pos);
+        // console.log(pos);
         previousX = e.clientX;
         previousY = e.clientY;
 
@@ -116,14 +119,19 @@ let Filters = (function () {
 
   window.applyGrid = function (size) {
     let c_canvas = document.getElementById("c");
+    c_canvas.style.width = '100%';
+    c_canvas.style.height = '100%';
+    c_canvas.width = c_canvas.offsetWidth;
+    c_canvas.height = c_canvas.offsetHeight;
+
     let context = c_canvas.getContext("2d");
-    let width = c_canvas.width;
-    let height = c_canvas.height;
+    let width = $('#image').width();
+    let height = $('#image').height();
 
     let s = parseInt(size);
     context.clearRect(0, 0, width, height);
     context.beginPath();
-    context.strokeStyle = "#eee";
+    context.strokeStyle = "pink";
     context.globalAlpha = 0.4;
 
     for (var x = 0.5; x < width; x += s) {
@@ -143,6 +151,7 @@ let Filters = (function () {
 
     $("#grayscale-toggle").on("click", () => {
       let input = $("#grayscale");
+      // console.log(input.attr("value"))
       let currentValue = input.attr("value");
       if (currentValue == "0") {
         input.attr("value", "100");
@@ -153,7 +162,7 @@ let Filters = (function () {
     });
 
     $("#posterize-toggle").on("click", () => {
-      console.log($("#posterize-toggle").attr("value"));
+      // console.log($("#posterize-toggle").attr("value"));
       let posterize = parseInt($("#posterize-toggle").attr("value"));
 
       if (posterize) {
