@@ -1,24 +1,6 @@
 let Filters = (function () {
   let pub = {};
 
-  window.applyFilter = function () {
-    let image = document.querySelector("img");
-    let filterValues = $("input");
-    let computedFilters = "";
-    filterValues = Array.from(filterValues).slice(0,-1);
-    // console.log(filterValues)
-    filterValues.forEach((element) => {
-      computedFilters +=
-        element.getAttribute("data-filter") +
-        "(" +
-        element.value +
-        element.getAttribute("data-scale") +
-        ")";
-    });
-    // console.log(computedFilters)
-    image.style.filter = computedFilters;
-  };
-
   // https://jsfiddle.net/xta2ccdt/13/
   function ScrollZoom(container, max_scale, factor) {
     var target = container.children().first();
@@ -119,62 +101,115 @@ let Filters = (function () {
 
   window.applyGrid = function (size) {
     let c_canvas = document.getElementById("c");
-    c_canvas.style.width = '100%';
-    c_canvas.style.height = '100%';
+    c_canvas.style.width = "100%";
+    c_canvas.style.height = "100%";
     c_canvas.width = c_canvas.offsetWidth;
     c_canvas.height = c_canvas.offsetHeight;
 
     let context = c_canvas.getContext("2d");
-    let width = $('#image').width();
-    let height = $('#image').height();
+    let width = $("#image").width();
+    let height = $("#image").height();
 
     let s = parseInt(size);
     context.clearRect(0, 0, width, height);
     context.beginPath();
     context.strokeStyle = "pink";
-    context.globalAlpha = 0.4;
+    context.globalAlpha = 0.2;
 
-    for (var x = 0.5; x < width; x += s) {
-      context.moveTo(x, 0);
-      context.lineTo(x, height);
-    }
     for (var y = 0.5; y < height; y += s) {
-      context.moveTo(0, y);
-      context.lineTo(width, y);
+      for (var x = 0.5; x < width; x += s) {
+        context.moveTo(x, 0);
+        context.lineTo(x, height);
+        context.moveTo(0, y);
+        context.lineTo(width, y);
+        //Diagonals
+        context.moveTo(x, y);
+        context.lineTo(x + s, y + s);
+        context.moveTo(x + s, y);
+        context.lineTo(x, y + s);
+      }
     }
 
     context.stroke();
   };
 
+  function drawProject(input, canvas, context, grayscale) {
+    context.drawImage(base_image, 0, 0, canvas.width, canvas.height);
+    if (grayscale) {
+      var width = input.width;
+      var height = input.height;
+      var imgPixels = context.getImageData(0, 0, width, height);
+
+      for (var y = 0; y < height; y++) {
+        for (var x = 0; x < width; x++) {
+          var i = y * 4 * width + x * 4;
+          var avg =
+            (imgPixels.data[i] +
+              imgPixels.data[i + 1] +
+              imgPixels.data[i + 2]) /
+            3;
+          imgPixels.data[i] = avg;
+          imgPixels.data[i + 1] = avg;
+          imgPixels.data[i + 2] = avg;
+        }
+      }
+
+      context.putImageData(
+        imgPixels,
+        0,
+        0,
+        0,
+        0,
+        imgPixels.width,
+        imgPixels.height
+      );
+    }
+  }
+
   pub.setup = () => {
     var scroll_zoom = new ScrollZoom($("#container"), 4, 0.5);
+    applyGrid(200);
 
+    var grayscale = false;
+    var canvas = document.getElementById("image");
+    // Correct dpi - https://medium.com/wdstack/fixing-html5-2d-canvas-blur-8ebe27db07da
+    let dpi = window.devicePixelRatio;
+    let style_height = +getComputedStyle(canvas)
+      .getPropertyValue("height")
+      .slice(0, -2);
+    let style_width = +getComputedStyle(canvas)
+      .getPropertyValue("width")
+      .slice(0, -2);
+    //scale the canvas
+    canvas.setAttribute("height", style_height * dpi);
+    canvas.setAttribute("width", style_width * dpi);
+
+    var context = canvas.getContext("2d");
+    context.imageSmoothingEnabled = false;
+
+    base_image = new Image();
+    base_image.src = "model.jpg";
+    base_image.onload = function () {
+      drawProject(base_image, canvas, context, grayscale);
+    };
+
+    // Filter application area
     $("#grayscale-toggle").on("click", () => {
-      let input = $("#grayscale");
-      // console.log(input.attr("value"))
-      let currentValue = input.attr("value");
-      if (currentValue == "0") {
-        input.attr("value", "100");
-      } else {
-        input.attr("value", "0");
-      }
-      this.applyFilter();
+      grayscale = !grayscale;
+      drawProject(base_image, canvas, context, grayscale);
     });
 
     $("#posterize-toggle").on("click", () => {
       // console.log($("#posterize-toggle").attr("value"));
       let posterize = parseInt($("#posterize-toggle").attr("value"));
-
       if (posterize) {
-        $("img").css("filter", "url(#posterize)");
+        $("#image").css("filter", "url(#posterize)");
         $("#posterize-toggle").attr("value", "0");
       } else {
-        $("img").css("filter", "none");
+        $("#image").css("filter", "none");
         $("#posterize-toggle").attr("value", "1");
       }
     });
-
-    applyGrid(10);
   };
 
   return pub;
