@@ -1,5 +1,12 @@
 let Filters = (function () {
   let pub = {};
+  pub.imgCanvas = document.getElementById("image");
+  pub.base_image = new Image();
+  pub.grayscale = false;
+  pub.posterize = false;
+  pub.grid = false;
+  pub.imgWidth;
+  pub.imgHeight;
 
   // https://jsfiddle.net/xta2ccdt/13/
   function ScrollZoom(container, max_scale, factor) {
@@ -112,29 +119,46 @@ let Filters = (function () {
 
     let s = parseInt(size);
     context.clearRect(0, 0, width, height);
-    context.beginPath();
-    context.strokeStyle = "pink";
-    context.globalAlpha = 0.2;
 
-    for (var y = 0.5; y < height; y += s) {
-      for (var x = 0.5; x < width; x += s) {
-        context.moveTo(x, 0);
-        context.lineTo(x, height);
-        context.moveTo(0, y);
-        context.lineTo(width, y);
-        //Diagonals
-        context.moveTo(x, y);
-        context.lineTo(x + s, y + s);
-        context.moveTo(x + s, y);
-        context.lineTo(x, y + s);
+    if (pub.grid) {
+      context.beginPath();
+      context.strokeStyle = "pink";
+      context.globalAlpha = 0.2;
+
+      for (var y = 0.5; y < height; y += s) {
+        for (var x = 0.5; x < width; x += s) {
+          context.moveTo(x, 0);
+          context.lineTo(x, height);
+          context.moveTo(0, y);
+          context.lineTo(width, y);
+          //Diagonals
+          context.moveTo(x, y);
+          context.lineTo(x + s, y + s);
+          context.moveTo(x + s, y);
+          context.lineTo(x, y + s);
+        }
       }
-    }
 
-    context.stroke();
+      context.stroke();
+    }
   };
 
-  function drawProject(input, canvas, context, grayscale) {
-    context.drawImage(base_image, 0, 0, canvas.width, canvas.height);
+  function drawProject() {
+    let grayscale = pub.grayscale;
+    let canvas = pub.imgCanvas;
+    let context = canvas.getContext("2d");
+    let input = pub.base_image;
+
+    // Make sure image isnt squashed to fit in canvas
+    var wrh = input.width / input.height;
+    var newWidth = canvas.width;
+    var newHeight = newWidth / wrh;
+    if (newHeight > canvas.height) {
+      newHeight = canvas.height;
+      newWidth = newHeight * wrh;
+    }
+    context.drawImage(input, 0, 0, newWidth, newHeight);
+
     if (grayscale) {
       var width = input.width;
       var height = input.height;
@@ -166,48 +190,59 @@ let Filters = (function () {
     }
   }
 
-  pub.setup = () => {
-    var scroll_zoom = new ScrollZoom($("#container"), 4, 0.5);
-    applyGrid(200);
-
-    var grayscale = false;
-    var canvas = document.getElementById("image");
+  imgLoad = (src) => {
     // Correct dpi - https://medium.com/wdstack/fixing-html5-2d-canvas-blur-8ebe27db07da
     let dpi = window.devicePixelRatio;
-    let style_height = +getComputedStyle(canvas)
+    let style_height = +getComputedStyle(pub.imgCanvas)
       .getPropertyValue("height")
       .slice(0, -2);
-    let style_width = +getComputedStyle(canvas)
+    let style_width = +getComputedStyle(pub.imgCanvas)
       .getPropertyValue("width")
       .slice(0, -2);
     //scale the canvas
-    canvas.setAttribute("height", style_height * dpi);
-    canvas.setAttribute("width", style_width * dpi);
+    pub.imgCanvas.setAttribute("height", style_height * dpi);
+    pub.imgCanvas.setAttribute("width", style_width * dpi);
 
-    var context = canvas.getContext("2d");
-    context.imageSmoothingEnabled = false;
-
-    base_image = new Image();
-    base_image.src = "model.jpg";
-    base_image.onload = function () {
-      drawProject(base_image, canvas, context, grayscale);
+    pub.base_image.src = src;
+    pub.base_image.onload = function () {
+      drawProject();
     };
+  };
+
+  window.addEventListener("load", function () {
+    document
+      .querySelector('input[type="file"]')
+      .addEventListener("change", function () {
+        if (this.files && this.files[0]) {
+          src = URL.createObjectURL(this.files[0]); // set src to blob url
+          imgLoad(src);
+          // img.onload = imageIsLoaded;
+        }
+      });
+  });
+
+  pub.setup = () => {
+    var scroll_zoom = new ScrollZoom($("#container"), 4, 0.5);
+    applyGrid(200);
+    imgLoad("model.jpg");
 
     // Filter application area
     $("#grayscale-toggle").on("click", () => {
-      grayscale = !grayscale;
-      drawProject(base_image, canvas, context, grayscale);
+      pub.grayscale = !pub.grayscale;
+      drawProject();
+    });
+
+    $("#grid-toggle").on("click", () => {
+      pub.grid = !pub.grid;
+      applyGrid($("#grid-input").attr("value"));
     });
 
     $("#posterize-toggle").on("click", () => {
-      // console.log($("#posterize-toggle").attr("value"));
-      let posterize = parseInt($("#posterize-toggle").attr("value"));
-      if (posterize) {
+      pub.posterize = !pub.posterize;
+      if (pub.posterize) {
         $("#image").css("filter", "url(#posterize)");
-        $("#posterize-toggle").attr("value", "0");
       } else {
         $("#image").css("filter", "none");
-        $("#posterize-toggle").attr("value", "1");
       }
     });
   };

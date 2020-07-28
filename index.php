@@ -48,11 +48,13 @@
     </style>
 
     <h1> DRAWLIA</h1>
-    <button id="grayscale-toggle">BW</button><br><br>
+    <button id="grayscale-toggle">Toggle Grayscale</button><br><br>
+    <button id="grid-toggle">Toggle Grid</button><br><br>
     <label>Grid Size</label>
     <input id="grid-input" type="range" min="10" max="200" value="200" step="10" onchange="applyGrid(this.value)"> <br>
-    <button id="posterize-toggle" value="1">Posterize</button><br>
-    <br>
+    <button id="posterize-toggle">Posterize</button><br> <br>
+    <label>Upload image</label>
+    <input type="file">
 
     <div id="container">
         <div id="slide">
